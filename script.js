@@ -4,6 +4,11 @@ function initialize() {
   const gregorianInput = document.getElementById("gregorianDate");
   const julianInput = document.getElementById("jdeJulianDate");
 
+  if (!gregorianInput || !julianInput) {
+    console.error("Missing input elements: #gregorianDate or #jdeJulianDate");
+    return;
+  }
+
   // Set today's date in the Gregorian input and calculate its Julian equivalent
   gregorianInput.valueAsDate = new Date();
 
@@ -50,9 +55,9 @@ function isValidJdeJulianDate(julianDate) {
     return false;
   }
 
-  const century = parseInt(julianDate.substr(0, 1), 10);
-  const yearWithinCentury = parseInt(julianDate.substr(1, 2), 10);
-  const dayOfYear = parseInt(julianDate.substr(3, 3), 10);
+  const century = parseInt(julianDate.slice(0, 1), 10);
+  const yearWithinCentury = parseInt(julianDate.slice(1, 3), 10);
+  const dayOfYear = parseInt(julianDate.slice(3, 6), 10);
   const fullYear = (century + 19) * 100 + yearWithinCentury;
 
   if (
@@ -71,9 +76,9 @@ function isValidJdeJulianDate(julianDate) {
 }
 
 function jdeJulianDateToGregorian(julianDate) {
-  const century = parseInt(julianDate.substr(0, 1), 10);
-  const yearWithinCentury = parseInt(julianDate.substr(1, 2), 10);
-  const dayOfYear = parseInt(julianDate.substr(3, 3), 10);
+  const century = parseInt(julianDate.slice(0, 1), 10);
+  const yearWithinCentury = parseInt(julianDate.slice(1, 3), 10);
+  const dayOfYear = parseInt(julianDate.slice(3, 6), 10);
   const fullYear = (century + 19) * 100 + yearWithinCentury;
 
   const gregorianDate = new Date(Date.UTC(fullYear, 0, 1));
