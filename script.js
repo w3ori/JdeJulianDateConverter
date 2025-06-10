@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", initialize);
 
 function initialize() {
-  const gregorianInput = document.getElementById("gregorian");
-  const julianInput = document.getElementById("julian");
+  const gregorianInput = document.getElementById("gregorianDate");
+  const julianInput = document.getElementById("jdeJulianDate");
 
   // Set today's date in the Gregorian input and calculate its Julian equivalent
   gregorianInput.valueAsDate = new Date();
 
   // Calculate and set the Julian date based on today's Gregorian date
-  julianInput.value = gregorianToJulianDate(gregorianInput.valueAsDate);
+  julianInput.value = gregorianToJdeJulianDate(gregorianInput.valueAsDate);
 
   // Attach event listeners for input changes
   gregorianInput.addEventListener("input", handleGregorianInputChange);
@@ -17,57 +17,63 @@ function initialize() {
 
 function handleGregorianInputChange() {
   const gregorianDate = new Date(this.value);
-  const julianInput = document.getElementById("julian");
+  const julianInput = document.getElementById("jdeJulianDate");
 
   if (isValidDate(gregorianDate)) {
-    julianInput.value = gregorianToJulianDate(gregorianDate);
+    julianInput.value = gregorianToJdeJulianDate(gregorianDate);
     removeInvalidClass(this, julianInput);
   } else {
+    julianInput.value = null; // Reset Julian date if Gregorian is invalid
     addInvalidClass(this);
   }
 }
 
 function handleJulianInputChange() {
   const julianDate = this.value.trim();
-  const gregorianInput = document.getElementById("gregorian");
+  const gregorianInput = document.getElementById("gregorianDate");
 
-  if (isValidjulianDate(julianDate)) {
-    gregorianInput.valueAsDate = julianDateToGregorian(julianDate);
+  if (isValidJdeJulianDate(julianDate)) {
+    gregorianInput.valueAsDate = jdeJulianDateToGregorian(julianDate);
     removeInvalidClass(this, gregorianInput);
   } else {
+    gregorianInput.valueAsDate = null; // Reset Gregorian date if Julian is invalid
     addInvalidClass(this);
   }
 }
 
 function isValidDate(date) {
-  return !isNaN(date.getTime());
+  return date instanceof Date && !isNaN(date.getTime());
 }
 
-function isValidjulianDate(julianDate) {
-  const century = parseInt(julianDate.charAt(0), 10);
-  const yearWithinCentury = parseInt(julianDate.substring(1, 3), 10);
-  const dayOfYear = parseInt(julianDate.substring(3), 10);
+function isValidJdeJulianDate(julianDate) {
+  if (julianDate.length > 6) {
+    return false;
+  }
+
+  const century = parseInt(julianDate.substr(0, 1), 10);
+  const yearWithinCentury = parseInt(julianDate.substr(1, 2), 10);
+  const dayOfYear = parseInt(julianDate.substr(3, 3), 10);
   const fullYear = (century + 19) * 100 + yearWithinCentury;
 
-  if (/^\d{5,6}$/.test(julianDate)) {
-    const maxDays = isLeapYear(fullYear) ? 366 : 365;
-    return dayOfYear >= 1 && dayOfYear <= maxDays;
+  if (
+    isNaN(century) ||
+    isNaN(yearWithinCentury) ||
+    isNaN(dayOfYear) ||
+    century < 0 ||
+    yearWithinCentury < 0 ||
+    dayOfYear < 1 ||
+    dayOfYear > (isLeapYear(fullYear) ? 366 : 365)
+  ) {
+    return false;
   }
-  return false;
+
+  return true;
 }
 
-function addInvalidClass(...elements) {
-  elements.forEach((el) => el.classList.add("invalid"));
-}
-
-function removeInvalidClass(...elements) {
-  elements.forEach((el) => el.classList.remove("invalid"));
-}
-
-function julianDateToGregorian(julianDate) {
-  const century = parseInt(julianDate.charAt(0), 10);
-  const yearWithinCentury = parseInt(julianDate.substring(1, 3), 10);
-  const dayOfYear = parseInt(julianDate.substring(3), 10);
+function jdeJulianDateToGregorian(julianDate) {
+  const century = parseInt(julianDate.substr(0, 1), 10);
+  const yearWithinCentury = parseInt(julianDate.substr(1, 2), 10);
+  const dayOfYear = parseInt(julianDate.substr(3, 3), 10);
   const fullYear = (century + 19) * 100 + yearWithinCentury;
 
   const gregorianDate = new Date(Date.UTC(fullYear, 0, 1));
@@ -76,7 +82,7 @@ function julianDateToGregorian(julianDate) {
   return gregorianDate;
 }
 
-function gregorianToJulianDate(gregorianDate) {
+function gregorianToJdeJulianDate(gregorianDate) {
   const year = gregorianDate.getFullYear();
   const century = Math.floor(year / 100) - 19;
   const yearWithinCentury = year % 100;
@@ -85,13 +91,21 @@ function gregorianToJulianDate(gregorianDate) {
   const dayOfYear =
     Math.floor((gregorianDate - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
 
-  const julianDate = `${century}${yearWithinCentury
-    .toString()
-    .padStart(2, "0")}${dayOfYear.toString().padStart(3, "0")}`;
+  const centuryStr = century.toString();
+  const yearWithinCenturyStr = yearWithinCentury.toString().padStart(2, "0");
+  const dayOfYearStr = dayOfYear.toString().padStart(3, "0");
 
-  return julianDate;
+  return `${centuryStr}${yearWithinCenturyStr}${dayOfYearStr}`;
 }
 
 function isLeapYear(year) {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
+function addInvalidClass(...elements) {
+  elements.forEach((el) => el.classList.add("invalid"));
+}
+
+function removeInvalidClass(...elements) {
+  elements.forEach((el) => el.classList.remove("invalid"));
 }
