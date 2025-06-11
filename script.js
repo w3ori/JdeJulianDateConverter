@@ -51,7 +51,7 @@ function isValidDate(date) {
 }
 
 function isValidJdeJulianDate(julianDate) {
-  if (julianDate.length > 6) {
+  if (julianDate < 0 || !/^\d+$/.test(julianDate) || julianDate.length > 6) {
     return false;
   }
 
